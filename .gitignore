@@ -1,0 +1,19 @@
+# Fichiers Python
+__pycache__/
+*.pyc
+
+# Environnement virtuel
+.venv/
+venv/
+env/
+
+# Dossiers spécifiques de ce projet (datasets, etc.)
+data/
+dataset/
+
+# Configuration d'éditeurs
+.cursor/
+.vscode/
+
+# Fichiers d'environnement
+.env

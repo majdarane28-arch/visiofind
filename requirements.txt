@@ -1,0 +1,13 @@
+streamlit
+torch
+torchvision
+transformers
+Pillow
+opencv-python
+numpy
+pandas
+tqdm
+ddgs
+icrawler
+requests
+kaggle
