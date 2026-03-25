@@ -20,6 +20,9 @@ QUERIES_BASIC: Dict[str, Dict[str, List[str]]] = {
         "oiseau": ["bird on branch", "sparrow in nature", "small bird flying"],
         "cheval": ["horse in field", "horse running meadow", "pony farm"],
         "elephant": ["elephant savanna", "african elephant wildlife", "elephants herd"],
+        "lion": ["african lion", "male lion", "female lion"],
+        "lion_cub": ["lion cub", "baby lion", "young lion"],
+        'vache': ["cow in pasture", "dairy cow farm", "cattle grass field"],
     },
     "objets_lieux": {
         "chaise": ["wooden chair patio", "chair in cafe", "outdoor chair garden"],
@@ -31,6 +34,13 @@ QUERIES_BASIC: Dict[str, Dict[str, List[str]]] = {
         "parc": ["green park trees", "public park path", "city park bench"],
         "restaurant": ["restaurant dining room", "cafe interior people", "bistro tables evening"],
     },
+    "terrain_sport": {
+        "football": ["football field grass", "soccer pitch outdoor", "stadium football ground"],
+        "basketball": ["basketball court outdoor", "street basketball court", "indoor basketball arena"],
+        "tennis": ["tennis court clay", "tennis court hard surface", "outdoor tennis court net"],
+        "volleyball": ["volleyball court beach", "indoor volleyball court", "volleyball net court lines"],
+        "athletisme": ["running track stadium", "athletics track lanes", "track and field stadium"],
+    },
 }
 
 QUERIES_EXTENDED: Dict[str, Dict[str, List[str]]] = {
@@ -40,6 +50,8 @@ QUERIES_EXTENDED: Dict[str, Dict[str, List[str]]] = {
         "oiseau": ["bird on branch", "colorful bird flying", "small bird nature"],
         "cheval": ["horse galloping field", "horse stable outdoor", "pony meadow"],
         "elephant": ["elephant savanna", "african elephant herd", "elephant drinking water"],
+        "lion": ["african lion", "male lion", "female lion"],
+        "lion_cub": ["lion cub", "baby lion", "young lion"],
         "vache": ["cow in pasture", "dairy cow farm", "cattle grass field"],
         "mouton": ["sheep flock meadow", "lamb spring field", "sheep grazing hill"],
         "papillon": ["butterfly on flower", "monarch butterfly garden", "butterfly macro leaf"],
@@ -67,6 +79,14 @@ QUERIES_EXTENDED: Dict[str, Dict[str, List[str]]] = {
         "restaurant": ["busy restaurant interior", "cafe bar seating", "dinner tables evening"],
         "foret": ["dense forest trail", "sunlight through trees", "mossy woodland path"],
         "aeroport": ["airport terminal people", "runway plane takeoff", "boarding gate hall"],
+    },
+    "terrain_sport": {
+        "football": ["football field grass", "soccer stadium pitch", "amateur football ground", "goal posts field"],
+        "basketball": ["outdoor basketball court", "indoor basketball court", "urban street basketball", "basketball hoop court"],
+        "tennis": ["clay tennis court", "hard court tennis", "tennis net court", "tennis court aerial view"],
+        "volleyball": ["beach volleyball court", "indoor volleyball court", "volleyball net lines", "sand volleyball field"],
+        "padel": ["padel court glass walls", "outdoor padel court", "indoor padel court", "padel tennis court"],
+        "handball": ["handball court indoor", "handball arena floor", "team handball court", "sports hall handball"],
     },
 }
 
@@ -228,14 +248,34 @@ def main():
         choices=["basic", "extended"],
         help="Dataset preset size",
     )
+    parser.add_argument(
+        "--only-section",
+        type=str,
+        default=None,
+        choices=["animaux", "objets_lieux", "terrain_sport"],
+        help="Limiter la génération à une section (optionnel).",
+    )
+    parser.add_argument(
+        "--only-classes",
+        type=str,
+        default=None,
+        help="Limiter la génération à des classes précises (liste séparée par des virgules). Exemple: lion,lion_cub",
+    )
     args = parser.parse_args()
 
     root = args.project_root / "data" / "reference"
     query_map = QUERIES_EXTENDED if args.preset == "extended" else QUERIES_BASIC
     print(f"Building dataset in: {root}")
     print(f"Preset: {args.preset}")
+    only_classes = None
+    if args.only_classes:
+        only_classes = {c.strip() for c in args.only_classes.split(",") if c.strip()}
     for section, classes in query_map.items():
+        if args.only_section and section != args.only_section:
+            continue
         for class_name, queries in tqdm(classes.items(), desc=section):
+            if only_classes and class_name not in only_classes:
+                continue
             class_dir = root / section / class_name
             count = fetch_for_class(class_dir=class_dir, queries=queries, per_class=args.per_class)
             print(f"[{section}] {class_name}: {count} images")
